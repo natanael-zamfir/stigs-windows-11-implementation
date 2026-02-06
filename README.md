@@ -1,4 +1,4 @@
-## Windows 11 STIGS Implementations
+## Windows 11 STIG Implementations
 
 Hands on Windows 11 STIG implementations for system hardening, defensive security best practices and mapping hardening controls to MITRE ATT&CK techniques.
 <ul>
