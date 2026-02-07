@@ -26,4 +26,7 @@ References:
 [🛡️ WN11-CC-000326 – PowerShell Script Block Logging must be enabled](https://github.com/natanael-zamfir/stigs-windows-11-implementation/blob/main/WN11-CC-000326%20%E2%80%93%20PowerShell%20Script%20Block%20Logging%20must%20be%20enabled.md)
 - Enables PowerShell Script Block Logging to improve detection and post-attack investigation by recording PowerShell script block activity (extra detailed PS script blocks for improved SIEM investigation).
 
+[🛡️ WN11-CC-000327 – PowerShell Transcription must be enabled on Windows 11](https://github.com/natanael-zamfir/stigs-windows-11-implementation/blob/main/WN11-CC-000327%20%E2%80%93%20PowerShell%20Transcription%20must%20be%20enabled%20on%20Windows%2011.md)
+- Enables PowerShell Transcription to generate session transcripts for post-attack investigation and forensic evidence of PowerShell activity, in conjunction with WN11-CC-000326.
+
 <img width="1832" height="728" alt="image" src="https://github.com/user-attachments/assets/4a63bceb-f1eb-4e2c-9a1b-d0e4310beab9" />
