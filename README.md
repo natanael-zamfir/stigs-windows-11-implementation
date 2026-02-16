@@ -29,4 +29,7 @@ References:
 [🛡️ WN11-CC-000327 – PowerShell Transcription must be enabled on Windows 11](https://github.com/natanael-zamfir/stigs-windows-11-implementation/blob/main/WN11-CC-000327%20%E2%80%93%20PowerShell%20Transcription%20must%20be%20enabled%20on%20Windows%2011.md)
 - Enables PowerShell Transcription to generate session transcripts for post-attack investigation and forensic evidence of PowerShell activity, in conjunction with WN11-CC-000326.
 
+[🛡️ WN11-CC-000210 – The Microsoft Defender SmartScreen for Explorer must be enabled](https://github.com/natanael-zamfir/stigs-windows-11-implementation/blob/main/WN11-CC-000210%20%E2%80%93%20The%20Microsoft%20Defender%20SmartScreen%20for%20Explorer%20must%20be%20enabled.md)  
+- Enables Microsoft Defender SmartScreen for Explorer to warn or block untrusted downloads, reducing risks from crypto scam payloads such as fake wallet apps and “airdrop claim” tools (also malicious “security updates” delivered via scam links).
+
 <img width="1832" height="728" alt="image" src="https://github.com/user-attachments/assets/4a63bceb-f1eb-4e2c-9a1b-d0e4310beab9" />
