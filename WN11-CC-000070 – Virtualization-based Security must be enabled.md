@@ -84,8 +84,8 @@ This is useful because VBS typically requires the hypervisor to start.
 
 Expected:
 
-* `True` when the hypervisor is running
-On my system, HypervisorPresent was False, so I enabled the hypervisor and rebooted.
+* `True` when the hypervisor is running.
+- On my system, HypervisorPresent was False, so I enabled the hypervisor and rebooted.
 
 ---
 
