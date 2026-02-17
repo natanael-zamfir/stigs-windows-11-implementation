@@ -1,14 +1,20 @@
 # 🛡️ WN11-CC-000075 – Credential Guard must be running on Windows 11 (domain-joined)
 
-<img width="1837" height="796" alt="image" src="PASTE_YOUR_IMAGE_LINK_HERE" />
+## Summary
+Credential Guard keeps your Windows login secrets in a protected area so malware can’t easily steal them from memory (LSASS). LSASS is the Windows process that verifies logins and manages user credentials.
+
+A domain-joined PC is connected to a company network, so stolen credentials are more valuable.
+
+My PC isn’t domain-joined, so this STIG is **NA** for me even though I set the policy (learning purposes only).
+
+
+<img width="1816" height="904" alt="Screenshot 2026-02-17 185015" src="https://github.com/user-attachments/assets/9ca43b09-d951-47f4-b630-34f851df97e6" />
 
 # What it’s about?
-This STIG requires **Credential Guard** to be running on domain-joined Windows 11 systems.
-Credential Guard uses VBS to isolate credential material so attackers can’t easily steal passwords, hashes, or Kerberos tickets from memory.
+This STIG requires **Credential Guard** to be running on domain-joined Windows 11 systems. Credential Guard uses VBS to isolate credential material so attackers can’t easily steal passwords, hashes, or Kerberos tickets from memory.
 
 # Why it’s a security risk if disabled?
-If Credential Guard is **not running**, attackers who gain admin access can attempt credential dumping from memory (LSASS).
-That often leads to account takeover, identity theft, and lateral movement across a network.
+If Credential Guard is **not running**, attackers who gain admin access can attempt credential dumping from memory (LSASS). That often leads to account takeover, identity theft, and lateral movement across a network. 
 
 ---
 
@@ -22,9 +28,15 @@ Get-CimInstance -ClassName Win32_DeviceGuard -Namespace root\Microsoft\Windows\D
   Select-Object SecurityServicesRunning
 ````
 
+<img width="1048" height="134" alt="Screenshot 2026-02-17 185222" src="https://github.com/user-attachments/assets/4bb3bc39-3c11-4aba-a180-a1a2803f231c" />
+
 Expected:
 
 * `SecurityServicesRunning` includes `1` (Credential Guard). Example: `{1,2}`
+
+Observed:
+
+* `SecurityServicesRunning = {0}` (Credential Guard not running)
 
 ---
 
@@ -36,6 +48,8 @@ Policy keys under `HKLM:\SOFTWARE\Policies\...` only appear after being created.
 $path = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard'
 Test-Path $path
 ```
+
+<img width="852" height="60" alt="Screenshot 2026-02-17 185328" src="https://github.com/user-attachments/assets/86ccf27c-8906-4d8c-a3b9-9589132fbbb6" />
 
 * `False` → policy not configured
 * `True` → continue checking required values
@@ -49,6 +63,8 @@ Get-ItemProperty -Path $path -ErrorAction SilentlyContinue |
   Select-Object LsaCfgFlags
 ```
 
+<img width="796" height="121" alt="Screenshot 2026-02-17 185358" src="https://github.com/user-attachments/assets/b573eb5e-b4e8-466a-8961-8173d6d7590c" />
+
 Expected:
 
 * `LsaCfgFlags = 1` (Enabled with UEFI lock)
@@ -57,7 +73,7 @@ Expected:
 
 ## Findings
 
-Before configuration, Credential Guard was not confirmed as running and/or the policy value was not set as required, which results in **non-compliance**.
+Credential Guard was **not running** (`SecurityServicesRunning = {0}`) and the policy value `LsaCfgFlags` was not present before configuration. This STIG applies to **domain-joined** Windows 11 systems; this device is not domain-joined, so the control is **Not Applicable (NA)** in this environment.
 
 ---
 
@@ -77,9 +93,11 @@ New-ItemProperty -Path $path -Name LsaCfgFlags -PropertyType DWord -Value 1 -For
 Get-ItemProperty -Path $path | Select-Object LsaCfgFlags
 ```
 
+<img width="1037" height="217" alt="Screenshot 2026-02-17 185505" src="https://github.com/user-attachments/assets/70dd4781-1a27-42b2-aee7-9e33b6cd5c30" />
+
 Why this setting:
 
-* `LsaCfgFlags = 1` enforces Credential Guard enabled with UEFI lock (strongest / tamper-resistant option)
+* `LsaCfgFlags = 1` enforces Credential Guard enabled with UEFI lock (tamper-resistant option)
 
 ---
 
@@ -98,6 +116,8 @@ Get-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard' |
   Select-Object LsaCfgFlags
 ```
 
+<img width="1014" height="139" alt="Screenshot 2026-02-17 185545" src="https://github.com/user-attachments/assets/cbcd5c5b-a98a-4f78-8aed-e32696c8b606" />
+
 Expected:
 
 * `LsaCfgFlags = 1`
@@ -111,24 +131,34 @@ Get-CimInstance -ClassName Win32_DeviceGuard -Namespace root\Microsoft\Windows\D
   Select-Object SecurityServicesRunning
 ```
 
+<img width="1052" height="135" alt="image" src="https://github.com/user-attachments/assets/a8ba7d9b-90fc-4d2d-8dc8-23f8cdb9b365" />
+
 Expected:
 
 * `SecurityServicesRunning` includes `1`
+
+Observed:
+
+* `SecurityServicesRunning = {0}`
 
 ---
 
 ## Result
 
-Credential Guard is now enforced via policy and verified as running, reducing the risk of credential theft and identity compromise.
+Credential Guard policy was successfully configured (`LsaCfgFlags = 1`), however **Credential Guard is not running** on this device (`SecurityServicesRunning = {0}`), so the system does **not** meet the intended protection outcome.
+
+This STIG is scoped to **domain-joined Windows 11 systems**. On this device, `DomainJoined: NO` and `AzureAdJoined: NO`, so the requirement is **Not Applicable (NA)** for this standalone system.
+
+Practical impact: without Credential Guard running, an attacker who gains local admin/SYSTEM could have an easier time attempting **credential dumping from memory (LSASS)** compared to a properly supported and configured domain-joined Windows 11 enterprise build.
 
 ---
 
 ## STIG Status
 
 * **STIG ID:** WN11-CC-000075
-* **Status:** Compliant
-* **Remediation Method:** PowerShell registry policy enforcement + reboot
-* **Impact:** Strong protection against credential dumping and account takeover
+* **Status:** NA (Not Applicable) – Device is not domain-joined
+* **Remediation Method:** Policy value set via PowerShell; Credential Guard not running on this device
+* **Impact:** Credential Guard protection is not active on this device
 
 ---
 
@@ -146,11 +176,3 @@ Reducing theft of hashes/tickets makes pass-the-hash and related abuse harder.
 
 **T1078 – Valid Accounts**
 Protecting credentials helps prevent attackers from obtaining and using valid accounts.
-
-````
-
-Run these two commands now (Admin PowerShell) and paste the output so we can finish it fast:
-```powershell
-Get-CimInstance -ClassName Win32_DeviceGuard -Namespace root\Microsoft\Windows\DeviceGuard | Select-Object SecurityServicesRunning
-Get-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard' -ErrorAction SilentlyContinue | Select-Object LsaCfgFlags
-```
