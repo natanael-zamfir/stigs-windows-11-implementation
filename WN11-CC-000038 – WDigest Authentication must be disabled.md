@@ -2,21 +2,24 @@
 
 ## Summary
 
-This STIG makes sure Windows does not keep your password sitting in memory after you log in.
-Older authentication methods like WDigest could store credentials in readable form, which attackers can steal if they gain high privileges on the machine.
-By disabling it, even if an attacker compromises the system, they cannot easily recover real user passwords from memory.
+In this task, I ensured Windows does not retain user passwords in memory after authentication.  
+Legacy authentication mechanisms such as WDigest can store credentials in readable form, which attackers may extract if they gain elevated privileges.  
 
+By disabling WDigest, the system no longer exposes plaintext credentials in memory, reducing the risk of password theft even if the host becomes compromised.
 
 <img width="1833" height="466" alt="image" src="https://github.com/user-attachments/assets/55e55285-1a96-466f-bfa3-a588dc4db376" />
 
 # What it’s about?
-This STIG disables **WDigest Authentication credential caching**.  
-When WDigest is enabled, Windows may store user credentials in **plaintext inside LSASS memory**. LSASS is the Windows process that verifies logins and manages user credentials.
-If an attacker gains administrative or SYSTEM access, those credentials can be extracted directly from memory.
+This STIG requires disabling **WDigest authentication credential caching**.
+
+When WDigest is enabled, Windows may store user credentials in **plaintext within LSASS memory**.  
+LSASS (Local Security Authority Subsystem Service) is the Windows process responsible for verifying logins and managing authentication credentials.
+
+If an attacker gains administrative or SYSTEM-level access, they can target LSASS memory to extract usernames and passwords directly.
 
 # Why it’s a security risk if disabled (WDigest enabled)?
-If WDigest is enabled, plaintext credentials may be exposed in memory.  
-Attackers commonly dump LSASS to recover usernames and passwords, allowing identity theft, account takeover, and lateral movement across the environment.
+If WDigest remains enabled, plaintext credentials may be exposed in memory.  
+Attackers frequently dump LSASS during post-exploitation to recover credentials, enabling identity theft, account takeover, and lateral movement across systems.
 
 ---
 
@@ -24,7 +27,7 @@ Attackers commonly dump LSASS to recover usernames and passwords, allowing ident
 
 ### 1) Verify the registry path exists
 
-Policy configuration is controlled through the registry location below.
+I first validated whether the policy registry location responsible for WDigest configuration was present.
 
 ```powershell
 $path = 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\Wdigest'
@@ -33,12 +36,14 @@ Test-Path $path
 
 <img width="1031" height="58" alt="image" src="https://github.com/user-attachments/assets/a3d3e0fc-aa85-4a10-b98a-abbdc07c9e28" />
 
-* `False` → key missing (treat as **non-compliant** until confirmed)
-* `True` → continue checking required value
+* `False` → treated as **non-compliant** until configuration is confirmed
+* `True` → proceed to value validation
 
 ---
 
 ### 2) Check required value (WDigest must be disabled)
+
+I then verified whether credential caching was already disabled.
 
 ```powershell
 Get-ItemProperty -Path $path -ErrorAction SilentlyContinue |
@@ -55,7 +60,8 @@ Expected value:
 
 ## Findings
 
-Before configuration, WDigest was not confirmed as disabled, resulting in **non-compliance** with the STIG requirement.
+During assessment, the UseLogonCredential registry value was not present.  
+Because the setting was not explicitly enforced by policy, the system was treated as non-compliant under STIG requirements.
 
 ---
 
@@ -63,7 +69,7 @@ Before configuration, WDigest was not confirmed as disabled, resulting in **non-
 
 ### 1) Disable WDigest via PowerShell
 
-The following commands create the required registry key (if missing) and enforce the secure configuration.
+I enforced the secure configuration by creating the registry key (if required) and explicitly disabling credential caching.
 
 ```powershell
 $path = 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\Wdigest'
@@ -78,7 +84,7 @@ Get-ItemProperty -Path $path | Select-Object UseLogonCredential
 
 Why this setting:
 
-* `UseLogonCredential = 0` prevents WDigest from storing plaintext credentials in LSASS memory.
+* `UseLogonCredential = 0` prevents Windows from storing plaintext credentials inside LSASS memory.
 
 ---
 
@@ -101,10 +107,10 @@ Expected compliant output:
 
 ## Result
 
-WDigest authentication is now disabled through registry policy enforcement.
-This prevents plaintext credentials from being cached in memory and reduces the effectiveness of credential-dumping attacks targeting LSASS.
+WDigest authentication was successfully disabled through registry policy enforcement.
+The system no longer caches plaintext credentials in memory, reducing exposure to credential-dumping attacks targeting LSASS.
 
-In real environments, attackers frequently attempt credential harvesting early after gaining privilege escalation. Disabling WDigest removes an easy method of obtaining reusable credentials and helps limit lateral movement.
+Since attackers commonly attempt credential harvesting shortly after privilege escalation, removing this capability helps limit credential reuse and lateral movement opportunities.
 
 ---
 
@@ -122,12 +128,12 @@ In real environments, attackers frequently attempt credential harvesting early a
 ### Primary:
 
 **T1003 – OS Credential Dumping**
-Disabling WDigest prevents plaintext credentials from being available during LSASS memory dumping.
+Disabling WDigest prevents plaintext credentials from being available during LSASS memory extraction.
 
 ### Secondary:
 
 **T1550 – Use Alternate Authentication Material**
-Reducing available credential material makes pass-the-hash and credential reuse harder.
+Reducing available credential material limits pass-the-hash and credential reuse techniques.
 
 **T1078 – Valid Accounts**
 Limiting credential theft reduces attacker ability to authenticate using legitimate accounts.
