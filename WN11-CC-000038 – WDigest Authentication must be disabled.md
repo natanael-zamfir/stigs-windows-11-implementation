@@ -9,7 +9,7 @@ By disabling WDigest, the system no longer exposes plaintext credentials in memo
 
 <img width="1833" height="466" alt="image" src="https://github.com/user-attachments/assets/55e55285-1a96-466f-bfa3-a588dc4db376" />
 
-# What it’s about?
+## What it’s about?
 This STIG requires disabling **WDigest authentication credential caching**.
 
 When WDigest is enabled, Windows may store user credentials in **plaintext within LSASS memory**.  
@@ -17,7 +17,7 @@ LSASS (Local Security Authority Subsystem Service) is the Windows process respon
 
 If an attacker gains administrative or SYSTEM-level access, they can target LSASS memory to extract usernames and passwords directly.
 
-# Why it’s a security risk if disabled (WDigest enabled)?
+## Why it’s a security risk if disabled (WDigest enabled)?
 If WDigest remains enabled, plaintext credentials may be exposed in memory.  
 Attackers frequently dump LSASS during post-exploitation to recover credentials, enabling identity theft, account takeover, and lateral movement across systems.
 
