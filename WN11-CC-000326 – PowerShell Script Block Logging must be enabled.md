@@ -1,93 +1,94 @@
 # 🛡️ WN11-CC-000326 – PowerShell Script Block Logging must be enabled
+
+## Summary
+In this task, I enabled PowerShell Script Block Logging to ensure PowerShell script content executed on the system is recorded, improving visibility and investigation capability for command execution activity.
+
 <img width="1797" height="553" alt="image" src="https://github.com/user-attachments/assets/bc475b59-afb0-44eb-bd7a-9137e76858f2" />
 
 # What it’s about?
-This STIG turns on **PowerShell Script Block Logging**, which records PowerShell script content that runs on the system.
-So if a script (good or malicious) executes, Windows can log the **actual script text** to help defenders investigate what happened.
+This STIG requires **PowerShell Script Block Logging** to be enabled so Windows records the actual PowerShell script content executed on the system.
+
+PowerShell is widely used for legitimate administration but is also heavily abused during attacks. By enabling script block logging, I ensured that executed script content can be captured and reviewed during investigations.
 
 # Why it’s a security risk if disabled?
-PowerShell is commonly abused in cyber attacks because it’s built into Windows and very powerful.
-If Script Block Logging is **off**, attackers can run PowerShell commands with **much less traceability**, making detection and incident response harder.
+If Script Block Logging is disabled, PowerShell activity may execute with limited visibility. Attackers can run commands, download payloads, or perform reconnaissance with reduced traceability, making detection and incident response significantly more difficult.
 
 ---
 
 ## Step 1 — Check current state
 
-### 1) Verify Path
+### 1) Verify policy registry path
 
-As I couldn't find the key within this path visibly, I verified if it exists using PowerShell.
-The policy registry key didn’t exist yet because it hadn’t been configured. Policy keys under HKLM:\SOFTWARE\Policies\... only appear after being created.
+I first checked whether the Script Block Logging policy location existed.
 
 ```powershell
-PS C:\WINDOWS\system32> $path = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging'
->> Test-Path $path
->>
-False
-```
-In this case, the device is → **Non-compliant** as the key doesn't exist. 
+$path = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging'
+Test-Path $path
+````
+
+If the key does not exist, the policy has not been configured and the system is treated as non-compliant.
 
 ---
 
-### 2) Check if the policy is enabled directly through PowerShell
+### 2) Check Script Block Logging configuration
+
+I then verified whether the required policy value was present.
 
 ```powershell
 Get-ItemProperty -Path $path -Name EnableScriptBlockLogging -ErrorAction SilentlyContinue
 ```
-Because it is a policy, we want to check if it's true or false. 1 = enabled, 0 = not enabled.
-If the command gives no output, the key value is missing (which I expect since I manually tried to find the key).
 
-* No output → value missing (not configured)
-* `EnableScriptBlockLogging : 1` → enabled (compliant)
+Interpretation:
+
+* No output → value not configured
+* `EnableScriptBlockLogging = 1` → enabled and compliant
+
+---
 
 ## Findings
 
-The policy key doesn't exist, which indicates the setting was **not configured** and therefore it is not compliant.
+During assessment, the policy key and/or required value was not configured.
+Because Script Block Logging was not explicitly enforced, the system was considered **non-compliant**.
 
 ---
 
 ## Step 2 — Remediation
 
-### 1) Create the missing registry key
+### 1) Create or enforce policy registry configuration
+
+I configured the required policy registry path and enabled Script Block Logging.
 
 ```powershell
-PS C:\WINDOWS\system32> $path = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging'
->> New-Item -Path $path -Force | Out-Null
+$path = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging'
+New-Item -Path $path -Force | Out-Null
+
+New-ItemProperty -Path $path `
+-Name EnableScriptBlockLogging `
+-PropertyType DWord `
+-Value 1 -Force | Out-Null
 ```
 
-Since the key didn’t exist, I created it.
+Why this setting:
 
-* `-Force` guarantees the creation/override 
-* `Out-Null` hides “created successfully” output
-
----
-
-### 2) Create/overwrite the required DWORD value
-
-```powershell
-New-ItemProperty -Path $path -Name EnableScriptBlockLogging -PropertyType DWord -Value 1 -Force | Out-Null
-```
-
-* Here the `EnableScriptBlockLogging` policy switch is set to 1
-* `DWord` the key type
-* `Value 1` = **Enabled**
-* `-Force` overwrites wrong values if present
+* `EnableScriptBlockLogging = 1` forces Windows to log executed PowerShell script blocks, improving detection and forensic visibility.
 
 ---
 
 ## Step 3 — Verification
 
-### 1) Verifying the path to policy and the item property
+### 1) Verify policy value
 
 ```powershell
 Get-ItemProperty -Path $path | Select-Object EnableScriptBlockLogging
 ```
-The policy has been successfully enabled, making the device compliant.
 
 <img width="1071" height="136" alt="image" src="https://github.com/user-attachments/assets/eb2650ca-f7c7-4ef9-b455-26fe589963b4" />
 
+This confirms Script Block Logging is enabled.
+
 ---
 
-### 2) Confirm the policy and key exist
+### 2) Confirm policy path existence
 
 ```powershell
 Test-Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell'
@@ -96,14 +97,14 @@ Test-Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLoggi
 
 <img width="1067" height="111" alt="image" src="https://github.com/user-attachments/assets/1723106e-ba96-45d8-bee0-fddda2710c39" />
 
-
 ---
 
 ## Result
+
 <img width="1076" height="622" alt="image" src="https://github.com/user-attachments/assets/85d5f625-d153-4c9b-86b5-ba92fd65521d" />
 
-PowerShell Script Block Logging is now enabled and compliant.
-This improves detection and investigation of PowerShell-based attacks by recording script content.
+PowerShell Script Block Logging is now enforced through policy configuration.
+Executed PowerShell script content can be recorded, improving detection capability and enabling deeper investigation of PowerShell-based activity.
 
 ---
 
@@ -111,26 +112,25 @@ This improves detection and investigation of PowerShell-based attacks by recordi
 
 * **STIG ID:** WN11-CC-000326
 * **Status:** Compliant
-* **Remediation Method:** PowerShell registry policy enforcement
-* **Impact:** Better auditing and threat-hunting visibility for PowerShell activity
+* **Remediation Method:** Registry policy configuration via PowerShell
+* **Impact:** Improved auditing and threat-hunting visibility for PowerShell execution
 
 ---
 
 ## MITRE ATT&CK Mapping
 
 ### Primary:
+
 **T1059.001 – Command and Scripting Interpreter: PowerShell**
-Attackers use PowerShell to run commands, recon, persistence, and payload execution.
+Script block logging provides visibility into executed PowerShell scripts.
 
 ### Secondary:
+
 **T1082 — System Information Discovery**
-System information discovery about the device.
+Discovery commands executed through PowerShell become visible.
 
 **T1016 — System Network Configuration Discovery**
-System network conf. discovery about the device's network info.
+Network enumeration activity can be captured through logged scripts.
 
 **T1105 – Ingress Tool Transfer**
-Attackers use PowerShell to download additional tools/payloads from the network or internet.
-
-This control helps defenders detect and investigate malicious PowerShell activity by logging what was executed.
-
+PowerShell download activity used to retrieve tools or payloads can be recorded.
