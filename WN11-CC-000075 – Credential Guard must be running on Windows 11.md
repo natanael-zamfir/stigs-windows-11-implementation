@@ -10,10 +10,10 @@ My PC isn’t domain-joined, so this STIG is **NA** for me even though I set the
 
 <img width="1816" height="904" alt="Screenshot 2026-02-17 185015" src="https://github.com/user-attachments/assets/9ca43b09-d951-47f4-b630-34f851df97e6" />
 
-# What it’s about?
+## What it’s about?
 This STIG requires **Credential Guard** to be running on domain-joined Windows 11 systems. Credential Guard uses VBS to isolate credential material so attackers can’t easily steal passwords, hashes, or Kerberos tickets from memory.
 
-# Why it’s a security risk if disabled?
+## Why it’s a security risk if disabled?
 If Credential Guard is **not running**, attackers who gain admin access can attempt credential dumping from memory (LSASS). That often leads to account takeover, identity theft, and lateral movement across a network. 
 
 ---
