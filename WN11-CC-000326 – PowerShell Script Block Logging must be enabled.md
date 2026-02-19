@@ -5,12 +5,12 @@ In this task, I enabled PowerShell Script Block Logging to ensure PowerShell scr
 
 <img width="1797" height="553" alt="image" src="https://github.com/user-attachments/assets/bc475b59-afb0-44eb-bd7a-9137e76858f2" />
 
-# What it’s about?
+## What it’s about?
 This STIG requires **PowerShell Script Block Logging** to be enabled so Windows records the actual PowerShell script content executed on the system.
 
 PowerShell is widely used for legitimate administration but is also heavily abused during attacks. By enabling script block logging, I ensured that executed script content can be captured and reviewed during investigations.
 
-# Why it’s a security risk if disabled?
+## Why it’s a security risk if disabled?
 If Script Block Logging is disabled, PowerShell activity may execute with limited visibility. Attackers can run commands, download payloads, or perform reconnaissance with reduced traceability, making detection and incident response significantly more difficult.
 
 ---
