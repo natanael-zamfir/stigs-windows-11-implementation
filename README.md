@@ -1,4 +1,4 @@
-# 🖥️ Windows 11 STIG Hardening Implementations 🔐
+# 🖥️ Windows 11 STIG Hardening Implementations 🔐(v2r5) + MITRE ATT&CK Mapping
 
 In this project, I implemented multiple **DISA Windows 11 Security Technical Implementation Guide (STIG)** controls to harden a Windows endpoint against real-world attack techniques.
 
