@@ -6,7 +6,7 @@ This improves investigative visibility by allowing defenders to see exactly what
 
 <img width="1891" height="565" alt="image" src="https://github.com/user-attachments/assets/42d82bf7-d6fc-4c8e-a6f3-52b756a05b4c" />
 
-# What it’s about?
+## What it’s about?
 This STIG requires command-line logging to be enabled for process creation events.  
 I implemented this configuration so Windows records the **exact command and arguments** used whenever a process starts.
 
@@ -14,7 +14,7 @@ By default, Windows may only log that applications such as `powershell.exe` or `
 
 This visibility is important because attackers frequently use legitimate Windows tools that appear harmless unless their command arguments are inspected.
 
-# Why it’s a security risk if disabled?
+## Why it’s a security risk if disabled?
 During assessment, I identified that without command-line logging enabled, security monitoring would only show that a process started, not what it executed.
 
 Example:
