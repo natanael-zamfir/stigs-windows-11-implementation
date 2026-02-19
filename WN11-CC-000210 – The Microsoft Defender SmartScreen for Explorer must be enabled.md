@@ -5,12 +5,12 @@ In this task, I enabled Microsoft Defender SmartScreen for Explorer to ensure do
 
 <img width="1837" height="796" alt="image" src="https://github.com/user-attachments/assets/c3d750c4-e8a9-4892-b485-e46029714034" />
 
-# What it’s about?
+## What it’s about?
 This STIG requires **Microsoft Defender SmartScreen for Explorer** to be enabled so Windows evaluates files downloaded from the internet and warns or blocks execution if they appear suspicious or untrusted.
 
 SmartScreen provides a reputation-based protection layer that helps prevent execution of commonly used malware delivery methods such as fake installers, malicious downloads, and social-engineering payloads.
 
-# Why it’s a security risk if disabled?
+## Why it’s a security risk if disabled?
 If SmartScreen is disabled, users may execute unknown or malicious files without strong warnings or blocking controls.  
 This increases exposure to malware execution, credential theft, and ransomware attacks delivered through phishing or malicious downloads.
 
