@@ -24,7 +24,7 @@ References:
 
 ---
 
-[🛡️ WN11-CC-000070 – Virtualization-based Security must be enabled](https://github.com/natanael-zamfir/stigs-windows-11-implementation/blob/main/WN11-CC-000070.md)  
+[🛡️ WN11-CC-000070 – Virtualization-based Security must be enabled](https://github.com/natanael-zamfir/stigs-windows-11-implementation/blob/main/WN11-CC-000070%20%E2%80%93%20Virtualization-based%20Security%20must%20be%20enabled.md)  
 **(Memory Protection / Platform Security)**  
 - I enabled virtualization-based security to isolate sensitive system components from memory and kernel attacks.
 
@@ -48,25 +48,25 @@ References:
 
 ---
 
-[🛡️ WN11-CC-000066 – Command line data must be included in process creation events](https://github.com/natanael-zamfir/stigs-windows-11-implementation/blob/main/WN11-CC-000066.md)  
+[🛡️ WN11-CC-000066 – Command line data must be included in process creation events](https://github.com/natanael-zamfir/stigs-windows-11-implementation/blob/main/WN11-CC-000066%20%E2%80%93%20Command%20line%20data%20must%20be%20included%20in%20process%20creation%20events.md)  
 **(Endpoint Visibility / Process Monitoring)**  
 - I configured Windows to log full command-line arguments so executed processes can be clearly investigated.
 
 ---
 
-[🛡️ WN11-AU-000030 – Audit Security Group Management must be enabled (Success)](https://github.com/natanael-zamfir/stigs-windows-11-implementation/blob/main/WN11-AU-000030.md)  
+[🛡️ WN11-AU-000030 – Audit Security Group Management must be enabled (Success)](https://github.com/natanael-zamfir/stigs-windows-11-implementation/blob/main/WN11-AU-000030%20%E2%80%93%20Audit%20Security%20Group%20Management%20must%20be%20enabled.md)  
 **(Privilege Monitoring / Identity Security)**  
 - I enabled auditing of security group changes so privilege and permission modifications are tracked.
 
 ---
 
-[🛡️ WN11-SO-000205 – LanMan authentication level must be NTLMv2 only](https://github.com/natanael-zamfir/stigs-windows-11-implementation/blob/main/WN11-SO-000205.md)  
+[🛡️ WN11-SO-000205 – LanMan authentication level must be NTLMv2 only](https://github.com/natanael-zamfir/stigs-windows-11-implementation/blob/main/WN11-SO-000205%20%E2%80%93%20LanMan%20authentication%20level%20must%20be%20NTLMv2%20only.md)  
 **(Authentication Hardening)**  
 - I enforced NTLMv2-only authentication to block weak legacy authentication protocols.
 
 ---
 
-[🛡️ WN11-CC-000038 – WDigest Authentication must be disabled](https://github.com/natanael-zamfir/stigs-windows-11-implementation/blob/main/WN11-CC-000038.md)  
+[🛡️ WN11-CC-000038 – WDigest Authentication must be disabled](https://github.com/natanael-zamfir/stigs-windows-11-implementation/blob/main/WN11-CC-000038%20%E2%80%93%20WDigest%20Authentication%20must%20be%20disabled.md)  
 **(Credential Protection)**  
 - I disabled WDigest so passwords are not stored in memory where attackers could extract them.
 
