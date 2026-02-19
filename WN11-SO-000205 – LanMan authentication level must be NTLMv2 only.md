@@ -34,13 +34,13 @@ RDP login → fallback allowed ONLY to NTLMv2 (stronger authentication)
 This ensures that even when fallback authentication occurs, Windows refuses weaker legacy methods and uses a more secure protocol.
 
 
-# What it’s about?
+## What it’s about?
 This STIG requires the LAN Manager authentication level to be configured so the system **only sends NTLMv2 responses** and refuses older authentication mechanisms.
 
 LM and early NTLM protocols use weak cryptographic protections and are vulnerable to password cracking and replay attacks.  
 By enforcing NTLMv2-only authentication, the system ensures stronger credential protection during authentication processes.
 
-# Why it’s a security risk if disabled?
+## Why it’s a security risk if disabled?
 If LM or NTLM authentication is allowed, attackers can target weaker authentication exchanges that are significantly easier to crack offline.
 
 Legacy authentication increases risk because attackers may:
