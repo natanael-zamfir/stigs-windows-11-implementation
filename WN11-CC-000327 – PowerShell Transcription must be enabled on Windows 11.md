@@ -1,57 +1,67 @@
 # 🛡️ WN11-CC-000327 – PowerShell Transcription must be enabled on Windows 11
 
+## Summary
+In this task, I enabled PowerShell transcription to ensure PowerShell sessions are recorded as text transcripts, improving visibility and investigation capability for command execution activity.
+
 <img width="1816" height="541" alt="image" src="https://github.com/user-attachments/assets/b2472e42-aa63-414c-9411-9284fce21358" />
 
-# What it’s about?
-This STIG enables **PowerShell Transcription**, which creates **text transcript files** of PowerShell sessions.
-These transcripts help defenders review what was executed during a session and support investigations.
+## What it’s about?
+This STIG requires **PowerShell Transcription** to be enabled so that full PowerShell sessions are written to transcript files.
 
-# Why it’s a security risk if disabled?
-PowerShell is often used in attacks for reconnaissance, downloading payloads, and running commands.
-If transcription is **disabled**, you lose a useful evidence source (session transcripts), making detection and post-attack investigation harder.
-WN11-CC-000327 goes hand in hand with WN11-CC-000326.
+PowerShell is heavily used in both administration and attacks. By enabling transcription, I ensured that commands executed during a session are recorded, creating an additional forensic evidence source alongside event logs.
+
+## Why it’s a security risk if disabled?
+If transcription is disabled, PowerShell activity may only appear partially in logs or not contain enough context to understand what actions were performed.
+
+Attackers frequently use PowerShell for reconnaissance, payload execution, and system modification. Without transcripts, post-incident investigation and timeline reconstruction become significantly harder.
 
 ---
 
 ## Step 1 — Check current state
 
 ### 1) Verify the policy registry path exists
-Policy keys under `HKLM:\SOFTWARE\Policies\...` only appear after being created. If the key doesn’t exist, the setting is not configured.
+
+I first checked whether the transcription policy location was configured.
 
 ```powershell
 $path = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\Transcription'
 Test-Path $path
-```
+````
 
-* `False` → **Non-compliant** (policy not configured)
-* `True` → continue checking required values
+* `False` → policy not configured
+* `True` → proceed to value validation
 
 ---
 
-### 2) Check if transcription is enabled and configured
+### 2) Check transcription configuration values
 
-This checks the exact policy values that control transcription.
+I then reviewed the policy values controlling transcription.
 
 ```powershell
-Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | Select-Object EnableTranscripting, EnableInvocationHeader, OutputDirectory
+Get-ItemProperty -Path $path -ErrorAction SilentlyContinue |
+  Select-Object EnableTranscripting, EnableInvocationHeader, OutputDirectory
 ```
 
-* `EnableTranscripting = 1` → Transcription enabled
-* `EnableInvocationHeader = 1` → Adds extra context in the transcript (useful for investigations)
-* `OutputDirectory` → Where transcript files are written (must be a valid folder path)
+Required configuration:
+
+* `EnableTranscripting = 1`
+* `EnableInvocationHeader = 1`
+* `OutputDirectory` set to a valid folder path
 
 ---
 
 ## Findings
-Before configuration, transcription policy values were not present or not set as required, which result in **non-compliance**.
+
+During assessment, transcription policy values were either missing or not configured as required.
+Because transcription was not explicitly enforced, the system was treated as **non-compliant**.
 
 ---
 
 ## Step 2 — Remediation
 
-### 1) Configure Transcription policy via PowerShell
+### 1) Configure PowerShell Transcription policy
 
-The following commands create the policy registry key and set the required values.
+I configured registry policy settings to enable transcription and define a dedicated transcript storage location.
 
 ```powershell
 $path = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\Transcription'
@@ -68,57 +78,63 @@ Get-ItemProperty -Path $path | Select-Object EnableTranscripting, EnableInvocati
 
 Why these settings:
 
-* `EnableTranscripting = 1` turns on transcription
-* `OutputDirectory` defines where transcripts are saved
-* `EnableInvocationHeader = 1` increases the usefulness of transcripts during investigations
+* `EnableTranscripting = 1` enables session transcription
+* `EnableInvocationHeader = 1` records additional execution context
+* `OutputDirectory` defines a consistent forensic storage location
 
 ---
 
 ## Step 3 — Verification
 
-### 1) Verify the policy values are set correctly
+### 1) Verify policy values
 
 ```powershell
 Get-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\Transcription' |
   Select-Object EnableTranscripting, EnableInvocationHeader, OutputDirectory
 ```
 
-Expected compliant output:
+Expected compliant configuration:
 
-* `EnableTranscripting` = `1`
-* `EnableInvocationHeader` = `1`
-* `OutputDirectory` = `C:\ProgramData\PowerShellTranscripts`
+* `EnableTranscripting = 1`
+* `EnableInvocationHeader = 1`
+* `OutputDirectory` set to configured transcript directory
 
 ## Results
+
 <img width="1073" height="358" alt="Screenshot 2026-02-07 165217" src="https://github.com/user-attachments/assets/84002c48-7474-4696-9ac6-343bf5f12561" />
 
 ---
 
-### 2) Testing transcript verification
+### 2) Functional transcript verification
 
-A simple command was run to generate PowerShell activity:
+To confirm transcription was operational, I generated PowerShell activity:
 
 ```powershell
 Get-Date
 ```
 
-Confirm the transcript directory exists and PowerShell created a dated subfolder:
+I then verified transcript directory creation:
 
 ```powershell
-Get-ChildItem 'C:\ProgramData\PowerShellTranscripts' | Sort-Object LastWriteTime -Descending | Select-Object -First 5
+Get-ChildItem 'C:\ProgramData\PowerShellTranscripts' |
+  Sort-Object LastWriteTime -Descending |
+  Select-Object -First 5
 ```
 
-Then list transcript files inside the dated folder (in this example: `20260207`):
+Next, I reviewed transcript files inside the generated dated folder:
 
 ```powershell
 Get-ChildItem 'C:\ProgramData\PowerShellTranscripts\20260207' |
   Sort-Object LastWriteTime -Descending |
   Select-Object -First 5
 ```
-## Results 
+
+## Results
+
 <img width="1201" height="290" alt="image" src="https://github.com/user-attachments/assets/e35db17a-645c-4feb-8476-8a11569619e1" />
 
-The following command opens a `.txt` transcript file which includes the "Get-Date" command tested.
+Finally, I opened the most recent transcript file to confirm recorded commands:
+
 ```powershell
 $latest = Get-ChildItem 'C:\ProgramData\PowerShellTranscripts\20260207' -File |
   Sort-Object LastWriteTime -Descending |
@@ -126,14 +142,22 @@ $latest = Get-ChildItem 'C:\ProgramData\PowerShellTranscripts\20260207' -File |
 
 notepad $latest.FullName
 ```
+
+---
+
+## Result
+
+PowerShell transcription is now enforced through policy configuration.
+PowerShell sessions generate transcript files containing executed commands, improving forensic visibility and supporting investigation of administrative or malicious activity.
+
 ---
 
 ## STIG Status
 
 * **STIG ID:** WN11-CC-000327
 * **Status:** Compliant
-* **Remediation Method:** PowerShell registry policy enforcement
-* **Impact:** Improved visibility and forensic evidence for PowerShell activity
+* **Remediation Method:** Registry policy configuration via PowerShell
+* **Impact:** Improved monitoring and forensic evidence for PowerShell activity
 
 ---
 
@@ -142,16 +166,15 @@ notepad $latest.FullName
 ### Primary:
 
 **T1059.001 – Command and Scripting Interpreter: PowerShell**
-Attackers use PowerShell to execute commands and scripts.
+Transcripts provide visibility into PowerShell-based execution activity.
 
 ### Secondary:
 
 **T1082 — System Information Discovery**
-Attackers may use PowerShell to gather OS/host information; transcripts help confirm executed discovery commands.
+Executed discovery commands can be confirmed through transcript records.
 
 **T1016 — System Network Configuration Discovery**
-Attackers may use PowerShell to enumerate adapters, IPs, DNS, and routes; transcripts provide evidence of these actions.
+Network enumeration performed via PowerShell becomes visible in transcripts.
 
 **T1105 – Ingress Tool Transfer**
-Attackers may use PowerShell to download payloads/tools; transcripts can record these download commands if PowerShell is used.
-
+PowerShell download commands used to retrieve tools or payloads may be captured in transcripts.
