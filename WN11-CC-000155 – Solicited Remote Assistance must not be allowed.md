@@ -1,83 +1,126 @@
-# 🛡️WN11-CC-000155 – Solicited Remote Assistance must not be allowed
+# 🛡️ WN11-CC-000155 – Solicited Remote Assistance must not be allowed
+
+## Summary
+In this task, I disabled Solicited Remote Assistance to prevent users from inviting external parties to remotely control the system, reducing exposure to social engineering attacks and unauthorized remote access.
 
 <img width="1792" height="523" alt="image" src="https://github.com/user-attachments/assets/17fae7e4-0c8c-4b1b-bf82-274715c2fb59" />
 
-# What it’s about?
-This STIG implementation disables Windows Remote Assistance when a user asks someone else (or is being forced) to connect remotely to their machine.
-This is a very common social engineering scam: fake IT support, help desk or bank representative. Commonly used against the elderly or non-technical users.
+## What it’s about?
+This STIG requires **Solicited Remote Assistance** to be disabled.  
+Remote Assistance allows a user to invite another person to remotely connect and interact with their system.
 
-# Why it’s a security risk?
-An attacker convinces a user to request help. The User clicks **Allow**, as they are unaware of the attack.
-Once the attacker has remote control they can steal credentials, install malware and move laterally within the network.
+While intended for support scenarios, this feature is frequently abused in social engineering scams where attackers impersonate IT support or trusted organizations to gain remote access.
+
+## Why it’s a security risk?
+Attackers may convince a user to request remote help and approve a connection.  
+Once access is granted, the attacker can interact with the system as if physically present, allowing credential theft, malware installation, and further compromise.
 
 ---
 
 ## Step 1 — Check current state
 
-1. Press `Win + R`
-2. Type `regedit` and press Enter
-3. Navigate to the following registry path:
-   ```
-   HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
-   ```
-4. Inspect the registry value:
+### 1) Verify registry policy configuration
 
-- Value does not exist → **Non-compliant**
-- `fAllowToGetHelp = 1` → **Non-compliant**
-- `fAllowToGetHelp = 0` → **Compliant**
+I reviewed the registry location responsible for Remote Assistance policy enforcement.
+
+```
+
+HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services
+
+```
+
+The required registry value:
+
+```
+
+fAllowToGetHelp
+
+````
+
+Compliance interpretation:
+
+* Value missing → Non-compliant (policy not enforced)
+* `fAllowToGetHelp = 1` → Remote Assistance allowed (Non-compliant)
+* `fAllowToGetHelp = 0` → Remote Assistance disabled (Compliant)
 
 ### Findings
-The system was found to be **non-compliant**, as the policy was not configured.
+
+During assessment, the required policy value was not configured, therefore the system was treated as **non-compliant**.
 
 ---
 
 ## Step 2 — Remediation
 
-1. A new **DWORD (32-bit) Value** was created under the `Terminal Services` registry key.
-2. The value was named according to STIG requirements:
-   ```
-   fAllowToGetHelp
-   ```
-3. The value was set to:
-   ```
-   0
-   ```
-   This disables Solicited Remote Assistance.
-4. The system was restarted to ensure the policy was applied.
+### 1) Enforce Remote Assistance restriction
+
+I configured the required registry policy to disable Solicited Remote Assistance.
+
+```powershell
+$path = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services'
+
+New-Item -Path $path -Force | Out-Null
+
+New-ItemProperty -Path $path `
+-Name fAllowToGetHelp `
+-PropertyType DWord `
+-Value 0 -Force | Out-Null
+````
+
+Why this setting:
+
+* `fAllowToGetHelp = 0` disables Solicited Remote Assistance and prevents users from granting remote control access.
+
+### 2) Apply configuration
+
+A system restart was performed to ensure policy enforcement was applied.
+
+---
+
+## Step 3 — Verification
+
+### 1) Verify registry configuration
+
+```powershell
+Get-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services' |
+  Select-Object fAllowToGetHelp
+```
+
+Expected compliant configuration:
+
+```
+fAllowToGetHelp = 0
+```
+<img width="1045" height="130" alt="image" src="https://github.com/user-attachments/assets/76206d5f-2112-4ca7-8488-6a90a3606546" />
 
 ---
 
 ## Result
 
-Solicited Remote Assistance is disabled at the system level.  
-Users can no longer invite external parties to remotely control the machine, reducing exposure to social engineering attacks and unauthorized remote access.
+Solicited Remote Assistance is now disabled through policy configuration.
+Users can no longer invite external parties to remotely control the system, reducing risk from social engineering attacks and unauthorized interactive access.
 
 ---
 
 ## STIG Status
 
-- **STIG ID:** WN11-CC-000155  
-- **Status:** Compliant  
-- **Remediation Method:** Registry policy enforcement  
-- **Impact:** Reduced attack surface and prevention of unauthorized remote control
-
-<img width="1172" height="705" alt="image" src="https://github.com/user-attachments/assets/6376f176-53a8-410b-9951-79861ab161d6" />
+* **STIG ID:** WN11-CC-000155
+* **Status:** Compliant
+* **Remediation Method:** Registry policy enforcement
+* **Impact:** Reduced attack surface and prevention of unauthorized remote control access
 
 ---
 
 ## MITRE ATT&CK Mapping
 
+### Primary:
+
 **T1021 – Remote Services**
-What it is:
-Attackers gain access to a system by using legitimate remote access services instead of exploiting software bugs.
+Attackers may abuse legitimate remote access services to gain system access.
+
+### Secondary:
 
 **T1566 – Phishing**
-What it is:
-Attackers use social engineering to trick users into performing actions that grant access or execute malicious activity.
+Social engineering may be used to convince users to allow remote access.
 
 **T1078 – Valid Accounts**
-What it is:
-Attackers use legitimate credentials or approved access to operate as a trusted user.
-
-This control mitigates social engineering based remote access by preventing users from granting interactive remote control to unauthorized parties.
-
+Attackers operating through approved remote access appear as legitimate users.
